@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnTrack - Habit & Time Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 OnTrack</h1>
+            <p class="subtitle">Your Personal Habit & Time Management System</p>
+            <div class="date-selector">
+                <label for="currentDate">Date:</label>
+                <input type="date" id="currentDate" value="">
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-button active" data-tab="habits">Habit Tracker</button>
+            <button class="tab-button" data-tab="timeblocks">Time Tracker</button>
+            <button class="tab-button" data-tab="categories">Categories</button>
+            <button class="tab-button" data-tab="analytics">Analytics</button>
+            <button class="tab-button" data-tab="export">Export Data</button>
+        </nav>
+
+        <!-- Habit Tracker Tab -->
+        <div id="habits" class="tab-content active">
+            <div class="section">
+                <h2>Create New Habit</h2>
+                <form id="habitForm">
+                    <div class="form-row">
+                        <input type="text" id="habitName" placeholder="Habit name (e.g., Study, Gym)" required>
+                        <select id="habitType" required>
+                            <option value="">Select Type</option>
+                            <option value="daily">Daily Habit</option>
+                            <option value="times">Times (count something)</option>
+                            <option value="project">Project (with hours target)</option>
+                        </select>
+                        <select id="targetType" style="display:none;">
+                            <option value="binary">Yes/No</option>
+                            <option value="percentage">Percentage (0-100%)</option>
+                        </select>
+                        <input type="number" id="targetHours" placeholder="Target hours (for projects)" min="1" style="display:none;">
+                        <input type="number" id="targetValue" placeholder="Target value (e.g., 2000 calories)" min="1" style="display:none;">
+                        <button type="submit">Add Habit</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2>My Habits</h2>
+                <div id="habitsList"></div>
+            </div>
+
+            <div class="section">
+                <h2>Today's Progress</h2>
+                <div id="todayLogs"></div>
+            </div>
+        </div>
+
+        <!-- Time Tracker Tab -->
+        <div id="timeblocks" class="tab-content">
+            <div class="section">
+                <h2>Stopwatch Tracker</h2>
+                <div class="stopwatch-container">
+                    <div class="stopwatch-display">
+                        <h1 id="stopwatchTime">00:00:00</h1>
+                    </div>
+                    <div class="form-row">
+                        <select id="stopwatchCategory">
+                            <option value="">Select category</option>
+                        </select>
+                        <select id="stopwatchTask">
+                            <option value="">Select task (optional)</option>
+                        </select>
+                        <input type="text" id="stopwatchNotes" placeholder="Notes (optional)">
+                    </div>
+                    <div class="stopwatch-buttons">
+                        <button id="startStopBtn" class="stopwatch-btn start-btn" onclick="toggleStopwatch()">Start</button>
+                        <button id="breakBtn" class="stopwatch-btn break-btn" onclick="takeBreak()" style="display:none;">Break</button>
+                        <button id="resetBtn" class="stopwatch-btn" onclick="resetStopwatch()">Reset</button>
+                    </div>
+                    <div id="stopwatchStatus" class="stats-box" style="margin-top: 15px; display:none;">
+                        <p><strong>Active Time:</strong> <span id="activeTime">0:00</span></p>
+                        <p><strong>Break Time:</strong> <span id="breakTime">0:00</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Add Time Block Manually</h2>
+                <form id="timeBlockForm">
+                    <div class="form-row">
+                        <input type="time" id="startTime" required>
+                        <input type="time" id="endTime" required>
+                        <input type="text" id="activity" placeholder="Notes (optional)">
+                        <select id="categorySelect">
+                            <option value="">No category</option>
+                        </select>
+                        <select id="taskSelect">
+                            <option value="">No task</option>
+                        </select>
+                        <button type="submit">Add Block</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2>Time Breakdown</h2>
+                <div id="timeStats" class="stats-box">
+                    <p>Total tracked: <strong id="totalTracked">0</strong> hours</p>
+                    <p>Remaining: <strong id="remainingTime">24</strong> hours</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Today's Schedule</h2>
+                <div id="timeBlocksList"></div>
+            </div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div id="categories" class="tab-content">
+            <div class="section">
+                <h2>Create Category</h2>
+                <p>Group your time blocks into categories for better analytics (e.g., "Self-Study", "Miscellaneous")</p>
+                <form id="categoryForm">
+                    <div class="form-row">
+                        <input type="text" id="categoryName" placeholder="Category name (e.g., Self-Study)" required>
+                        <input type="color" id="categoryColor" value="#667eea">
+                        <button type="submit">Add Category</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2>My Categories</h2>
+                <div id="categoriesList"></div>
+            </div>
+
+            <div class="section">
+                <h2>Create Task</h2>
+                <p>Create specific tasks within categories (e.g., "Math" and "Science" under "Self-Study")</p>
+                <form id="taskForm">
+                    <div class="form-row">
+                        <input type="text" id="taskName" placeholder="Task name (e.g., Math)" required>
+                        <select id="taskCategorySelect">
+                            <option value="">No category</option>
+                        </select>
+                        <button type="submit">Add Task</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2>My Tasks</h2>
+                <div id="tasksList"></div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="section">
+                <h2>Time Analytics</h2>
+                <p>View how you've spent your time by category and task</p>
+                
+                <div class="form-row">
+                    <label>From: <input type="date" id="analyticsStartDate"></label>
+                    <label>To: <input type="date" id="analyticsEndDate"></label>
+                    <button onclick="loadAnalytics()">View Analytics</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Category Breakdown</h2>
+                <div id="analyticsResults"></div>
+            </div>
+
+            <div class="section">
+                <h2>Task Breakdown</h2>
+                <div id="taskAnalyticsResults"></div>
+            </div>
+
+            <div class="section">
+                <h2>Habit Analytics</h2>
+                <div id="habitAnalyticsResults"></div>
+            </div>
+        </div>
+
+        <!-- Export Tab -->
+        <div id="export" class="tab-content">
+            <div class="section">
+                <h2>Export Your Data</h2>
+                <p>Download your tracking data as CSV files for backup or analysis.</p>
+                
+                <div class="export-buttons">
+                    <div class="export-card">
+                        <h3>📋 Habit Logs</h3>
+                        <p>Export all your habit tracking data including daily logs and project progress.</p>
+                        <button onclick="exportHabits()" class="export-btn">Download Habits CSV</button>
+                    </div>
+                    
+                    <div class="export-card">
+                        <h3>⏰ Time Blocks</h3>
+                        <p>Export your complete time tracking history with all activity blocks.</p>
+                        <button onclick="exportTimeBlocks()" class="export-btn">Download Time Blocks CSV</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Import Your Data</h2>
+                <p>Upload previously exported CSV files to restore your data.</p>
+                
+                <div class="export-buttons">
+                    <div class="export-card">
+                        <h3>📋 Import Habit Logs</h3>
+                        <p>Upload a habits CSV file to import logs.</p>
+                        <input type="file" id="habitsFileInput" accept=".csv" style="margin: 10px 0;">
+                        <button onclick="importHabits()" class="export-btn">Import Habits CSV</button>
+                    </div>
+                    
+                    <div class="export-card">
+                        <h3>⏰ Import Time Blocks</h3>
+                        <p>Upload a time blocks CSV file to import your schedule.</p>
+                        <input type="file" id="timeBlocksFileInput" accept=".csv" style="margin: 10px 0;">
+                        <button onclick="importTimeBlocks()" class="export-btn">Import Time Blocks CSV</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>💡 Migration Tip</h3>
+                <p>Your data is stored in <code>/data/ontrack.db</code>. To migrate to a new device:</p>
+                <ol>
+                    <li>Export both CSV files as backup</li>
+                    <li>Copy the entire OnTrack folder to your new device</li>
+                    <li>Or use the CSV files to import data into a fresh installation</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
